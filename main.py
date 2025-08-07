@@ -16,11 +16,32 @@ def combat(player: Player, monster: Monster):
     # Simple turn-based combat
     while player.hp > 0 and monster.is_alive():
         # Player's turn
-        print(f"\n{player.name}'s turn.")
-        player_damage = max(0, player.attack - monster.defense)
-        monster.hp -= player_damage
-        print(f"You attack the {monster.name} for {player_damage} damage.")
-        print(f"{monster.name}'s HP: {monster.hp}/{monster.max_hp}")
+        print(f"\n{player.name}'s turn. HP: {player.hp}/{player.max_hp} | SP: {player.sp}/{player.max_sp}")
+
+        action_taken = False
+        while not action_taken:
+            print("Choose your action:")
+            print("  1. Attack")
+            print("  2. Skills (Not Implemented)")
+            print("  3. Items (Not Implemented)")
+
+            choice = input("> ")
+
+            if choice == "1":
+                player_damage = max(0, player.attack - monster.defense)
+                monster.hp -= player_damage
+                print(f"You attack the {monster.name} for {player_damage} damage.")
+                print(f"{monster.name}'s HP: {monster.hp}/{monster.max_hp}")
+                action_taken = True
+            elif choice == "2":
+                print("Skill system not implemented yet. You lose a turn.")
+                action_taken = True
+            elif choice == "3":
+                print("Item system not implemented yet. You lose a turn.")
+                action_taken = True
+            else:
+                print("Invalid choice. Please enter a valid number.")
+
         time.sleep(1)
 
         if not monster.is_alive():

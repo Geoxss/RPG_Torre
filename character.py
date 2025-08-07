@@ -1,6 +1,9 @@
 # character.py
 # This file will contain the character creation and class logic.
 
+from jobs import JOB_CLASSES
+
+
 class Player:
     """
     Represents the player character in the game.
@@ -70,6 +73,10 @@ class Player:
 
         print(f"\nCongratulations! You have reached Level {self.level}!")
 
+        # Check for Job Change
+        if self.level >= 10 and self.job_class == "Novice":
+            self._perform_job_change()
+
         # Fully restore HP/SP
         self._recalculate_derived_stats() # Recalculate before heal
         self.hp = self.max_hp
@@ -81,6 +88,36 @@ class Player:
 
         print(f"\nYour stats after leveling up:")
         self.display_sheet()
+
+    def _perform_job_change(self):
+        """Handles the job change process."""
+        print("\n--- JOB CHANGE ---")
+        print("You have reached Level 10 and can now change your job!")
+
+        available_jobs = list(JOB_CLASSES.keys())
+
+        while True:
+            print("\nAvailable jobs:")
+            for job_name, job_data in JOB_CLASSES.items():
+                print(f"- {job_name}: {job_data['description']}")
+
+            choice = input("Choose your new job: ").capitalize()
+
+            if choice in available_jobs:
+                self.job_class = choice
+                print(f"\nYou have become a {self.job_class}!")
+
+                # Apply stat bonuses
+                bonus = JOB_CLASSES[choice]["stat_bonus"]
+                print("You have received a stat bonus!")
+                for stat, value in bonus.items():
+                    self.stats[stat] += value
+                    print(f"  +{value} {stat.upper()}")
+
+                self._recalculate_derived_stats()
+                break
+            else:
+                print("Invalid choice. Please choose from the list.")
 
     def distribute_stat_points(self, points: int):
         """Allows the player to distribute a given number of stat points."""
