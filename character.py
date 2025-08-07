@@ -16,39 +16,114 @@ class Player:
         self.level = 1
         self.exp = 0
         self.job_class = "Novice"
+        self.exp_to_next_level = self._calculate_exp_to_next_level()
 
         # Base stats
         self.stats = {
-            "str": 5,
-            "agi": 5,
-            "vit": 5,
-            "int": 5,
-            "dex": 5,
-            "luk": 5
+            "str": 1, "agi": 1, "vit": 1,
+            "int": 1, "dex": 1, "luk": 1
         }
 
-        # Derived stats
+        # Derived stats are calculated after initialization
+        self.max_hp = 0; self.hp = 0
+        self.max_sp = 0; self.sp = 0
+        self.attack = 0; self.defense = 0
+        self._recalculate_derived_stats()
+
+    def _recalculate_derived_stats(self):
+        """Recalculates all derived stats after a change in base stats."""
         self.max_hp = self._calculate_max_hp()
         self.hp = self.max_hp
         self.max_sp = self._calculate_max_sp()
         self.sp = self.max_sp
+        self.attack = self._calculate_attack()
+        self.defense = self._calculate_defense()
+
+    def _calculate_attack(self) -> int:
+        return 10 + self.stats["str"]
+
+    def _calculate_defense(self) -> int:
+        return 5 + self.stats["agi"] // 5
 
     def _calculate_max_hp(self) -> int:
-        """Calculates max HP based on vitality."""
         return 50 + self.stats["vit"] * 10
 
     def _calculate_max_sp(self) -> int:
-        """Calculates max SP based on intelligence."""
         return 10 + self.stats["int"] * 5
+
+    def _calculate_exp_to_next_level(self) -> int:
+        return int(100 * (self.level ** 1.5))
+
+    def gain_exp(self, amount: int):
+        """Adds experience points and checks for level up."""
+        self.exp += amount
+        print(f"You gained {amount} experience points.")
+
+        while self.exp >= self.exp_to_next_level:
+            self.level_up()
+
+    def level_up(self):
+        """Handles the logic for leveling up."""
+        self.exp -= self.exp_to_next_level
+        self.level += 1
+        self.exp_to_next_level = self._calculate_exp_to_next_level()
+
+        print(f"\nCongratulations! You have reached Level {self.level}!")
+
+        # Fully restore HP/SP
+        self._recalculate_derived_stats() # Recalculate before heal
+        self.hp = self.max_hp
+        self.sp = self.max_sp
+
+        # Grant stat points
+        stat_points_to_distribute = 3
+        self.distribute_stat_points(stat_points_to_distribute)
+
+        print(f"\nYour stats after leveling up:")
+        self.display_sheet()
+
+    def distribute_stat_points(self, points: int):
+        """Allows the player to distribute a given number of stat points."""
+        print(f"\nYou have {points} stat points to distribute.")
+        remaining_points = points
+        valid_stats = list(self.stats.keys())
+
+        while remaining_points > 0:
+            print(f"\nPoints remaining: {remaining_points}")
+            self.display_sheet()
+
+            stat_choice = input(f"Enter the stat to increase {valid_stats}: ").lower()
+            if stat_choice not in self.stats:
+                print("Invalid stat. Please choose from the list.")
+                continue
+
+            try:
+                point_amount_str = input(f"How many points to add to {stat_choice.upper()}? (1-{remaining_points}) ")
+                point_amount = int(point_amount_str)
+
+                if point_amount <= 0 or point_amount > remaining_points:
+                    print(f"Invalid amount. Please enter a number between 1 and {remaining_points}.")
+                    continue
+
+                self.stats[stat_choice] += point_amount
+                remaining_points -= point_amount
+                print(f"Added {point_amount} to {stat_choice.upper()}.")
+
+            except ValueError:
+                print("Invalid input. Please enter a number.")
+
+        self._recalculate_derived_stats()
+        print("\nAll points distributed. Your stats have been updated.")
 
     def display_sheet(self):
         """Displays the character sheet."""
         print(f"--- Character Sheet ---")
         print(f"Name: {self.name}")
         print(f"Class: {self.job_class}")
-        print(f"Level: {self.level}")
+        print(f"Level: {self.level} | EXP: {self.exp}/{self.exp_to_next_level}")
         print(f"HP: {self.hp}/{self.max_hp}")
         print(f"SP: {self.sp}/{self.max_sp}")
+        print(f"ATK: {self.attack} | DEF: {self.defense}")
         print(f"--- Stats ---")
         for stat, value in self.stats.items():
             print(f"{stat.upper()}: {value}")
