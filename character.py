@@ -2,6 +2,7 @@
 # This file will contain the character creation and class logic.
 
 from jobs import JOB_CLASSES
+from skills import SKILLS
 
 
 class Player:
@@ -19,6 +20,7 @@ class Player:
         self.level = 1
         self.exp = 0
         self.job_class = "Novice"
+        self.skills = []
         self.exp_to_next_level = self._calculate_exp_to_next_level()
 
         # Base stats
@@ -30,7 +32,7 @@ class Player:
         # Derived stats are calculated after initialization
         self.max_hp = 0; self.hp = 0
         self.max_sp = 0; self.sp = 0
-        self.attack = 0; self.defense = 0
+        self.attack = 0; self.defense = 0; self.magic_attack = 0
         self._recalculate_derived_stats()
 
     def _recalculate_derived_stats(self):
@@ -40,10 +42,15 @@ class Player:
         self.max_sp = self._calculate_max_sp()
         self.sp = self.max_sp
         self.attack = self._calculate_attack()
+        self.magic_attack = self._calculate_magic_attack()
         self.defense = self._calculate_defense()
 
     def _calculate_attack(self) -> int:
         return 10 + self.stats["str"]
+
+    def _calculate_magic_attack(self) -> int:
+        """Calculates magic attack power based on intelligence."""
+        return 5 + self.stats["int"] * 2
 
     def _calculate_defense(self) -> int:
         return 5 + self.stats["agi"] // 5
@@ -114,6 +121,12 @@ class Player:
                     self.stats[stat] += value
                     print(f"  +{value} {stat.upper()}")
 
+                # Grant skills
+                for skill_name, skill_data in SKILLS.items():
+                    if skill_data["job_class"] == self.job_class:
+                        self.skills.append(skill_name)
+                        print(f"You have learned the skill: {skill_name}!")
+
                 self._recalculate_derived_stats()
                 break
             else:
@@ -160,7 +173,7 @@ class Player:
         print(f"Level: {self.level} | EXP: {self.exp}/{self.exp_to_next_level}")
         print(f"HP: {self.hp}/{self.max_hp}")
         print(f"SP: {self.sp}/{self.max_sp}")
-        print(f"ATK: {self.attack} | DEF: {self.defense}")
+        print(f"ATK: {self.attack} | MATK: {self.magic_attack} | DEF: {self.defense}")
         print(f"--- Stats ---")
         for stat, value in self.stats.items():
             print(f"{stat.upper()}: {value}")
